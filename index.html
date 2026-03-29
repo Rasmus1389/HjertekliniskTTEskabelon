@@ -1,0 +1,282 @@
+
+
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Klinisk Skabelon 52</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #e5e9eb; padding: 20px; color: #2c3e50; }
+  .master-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto 30px auto; gap: 20px; }
+  .master-title { color: #3e5c4d; font-size: 2.2em; letter-spacing: 1px; font-weight: bold; margin: 0; }
+  .top-controls { display: flex; align-items: center; gap: 15px; background: #f0f7f4; padding: 10px 20px; border-radius: 12px; border: 1px solid #d1e2d9; }
+  .name-input { border: 1px solid #bdced3; padding: 8px; border-radius: 4px; width: 200px; }
+  .copy-all-btn { background: #2c3e50; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
+  .copy-all-btn:hover { background: #1a252f; transform: translateY(-1px); }
+  .collapsible { background-color: #f0f7f4; color: #3e5c4d; cursor: pointer; padding: 18px; width: 100%; border: 1px solid #d1e2d9; text-align: left; outline: none; font-size: 1.2em; font-weight: bold; border-radius: 12px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+  .active, .collapsible:hover { background-color: #e2ede7; }
+  .collapsible:after { content: '\002B'; font-size: 1.5em; }
+  .active:after { content: "\2212"; }
+  .content { padding: 0; display: none; overflow: hidden; background-color: transparent; margin-bottom: 20px; }
+  .card { background: #f0f7f4; padding: 25px; border-radius: 0 0 12px 12px; border: 1px solid #d1e2d9; border-top: none; }
+  .input-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px 20px; align-items: center; }
+  .input-item { display: flex; align-items: center; position: relative; }
+  label { font-weight: 600; color: #4a7c66; width: 130px; flex-shrink: 0; }
+  input { border: 1px solid #bdced3; padding: 6px 10px; font-size: 15px; outline: none; background: #ffffff; width: 100%; border-radius: 4px; box-sizing: border-box; }
+  input:focus { border-color: #27ae60; background: #fffde7; }
+  .preview { background: #eeeeee; padding: 18px; border: 1px solid #d1e2d9; margin-top: 20px; border-radius: 8px; white-space: pre-wrap; word-break: break-word; line-height: 1.6; color: #2c3e50; min-height: 50px; }
+  button.copy-btn { background: #4a7c66; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+  .status { margin-left: 12px; color: #27ae60; font-weight: bold; }
+  .missing { color: #c0392b; font-weight: bold; }
+  .dropdown { position: absolute; top: 100%; left: 130px; right: 0; background: #fff; border: 1px solid #bdced3; border-radius: 4px; z-index: 1000; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+  .dropdown div { padding: 7px 10px; cursor: pointer; font-size: 14px; color: #2c3e50; }
+  .dropdown div:hover, .dropdown div.active-option { background: #e2ede7; }
+</style>
+</head>
+<body>
+
+<div style="max-width: 1200px; margin: auto;">
+  <div class="master-header">
+    <h1 class="master-title">Klinisk skabelon-beta 52</h1>
+    <div class="top-controls">
+      <label style="width: auto;">Patient Navn:</label>
+      <input autocomplete="off" type="text" id="patient_name" class="name-input" placeholder="Skriv navn..." oninput="updateTitle(this)">
+      <button class="copy-all-btn" onclick="copyAll()">Kopiér Samlet Journal</button>
+    </div>
+  </div>
+
+  <button class="collapsible">1. Anamnese</button>
+  <div class="content">
+    <div class="card">
+      <div class="input-grid">
+        <div class="input-item"><label>Alder:</label><input autocomplete="off" type="text" id="a_alder" placeholder="Tal..."></div>
+        <div class="input-item"><label>Køn:</label><input autocomplete="off" type="text" id="a_kon" data-list="Mand,Kvinde" placeholder="Mand"></div>
+        <div class="input-item"><label>Pga:</label><input autocomplete="off" type="text" id="a_pga" data-list="Brystsmerter,Åndenød,Palpitationer,Besvimmelse" placeholder="Brystsmerter"></div>
+        <div class="input-item"><label>obs:</label><input autocomplete="off" type="text" id="a_obs" data-list="AMI,Atrieflimren,VT,Avanceret AV blok" placeholder="AMI"></div>
+        <div class="input-item"><label>Debut:</label><input autocomplete="off" type="text" id="a_debut" placeholder="Tid, sted, omstændigheder"></div>
+        <div class="input-item"><label>Varighed:</label><input autocomplete="off" type="text" id="a_varighed" data-list="Timer,Minutter,Sekunder,Dage,Uger,Måneder,År" placeholder="Timer"></div>
+        <div class="input-item"><label>Karakter:</label><input autocomplete="off" type="text" id="a_karakter" data-list="Trykken,Palpitationer,Stikken" placeholder="Trykken"></div>
+        <div class="input-item"><label>Udstråling:</label><input autocomplete="off" type="text" id="a_ud" data-list="uden udstråling,med udstråling,Stikken,Resp. synkron komponent" placeholder="Ingen udstråling"></div>
+        <div class="input-item"><label>VAS:</label><input autocomplete="off" type="text" id="a_vas" placeholder="0-10"></div>
+        <div class="input-item"><label>Nitro effekt:</label><input autocomplete="off" type="text" id="a_nitro" data-list="Ingen virkning,God effekt,Usikker effekt" placeholder="Ingen"></div>
+        <div class="input-item"><label>RF:</label><input autocomplete="off" type="text" id="a_risiko" placeholder="Ingen"></div>
+        <div class="input-item"><label>Tidl. kard.:</label><input autocomplete="off" type="text" id="a_tidl" placeholder="Beskriv..."></div>
+      </div>
+      <div class="preview" id="pre_ana"></div>
+      <button class="copy-btn" onclick="copy('pre_ana', 'st_ana')">Kopiér Anamnese</button><span id="st_ana" class="status"></span>
+    </div>
+  </div>
+
+  <button class="collapsible">2. Objektivt</button>
+  <div class="content">
+    <div class="card" style="border-top: 4px solid #27ae60;">
+      <div class="input-grid">
+        <div class="input-item"><label>AT:</label><input autocomplete="off" type="text" id="o_at" data-list="Upåvirket. Fri resp. Vågen og orienteret., ,Smerteforpint,Hviledyspnø" placeholder="Vågen klar..."></div>
+        <div class="input-item"><label>Stet. P:</label><input autocomplete="off" type="text" id="o_stetp" data-list="Vesikulær resp. Bilat.,Krep. pulm basalt bilat,Dæmpning pulm. basalt" placeholder="Vesikulær..."></div>
+        <div class="input-item"><label>Stet. C:</label><input autocomplete="off" type="text" id="o_stetc" data-list="Regelmæssig hjerteaktion = pp.,Arytmia perp.,Mislyd over prækordiet" placeholder="Regelmæssig..."></div>
+        <div class="input-item"><label>Abdomen:</label><input autocomplete="off" type="text" id="o_abd" data-list="Blødt og indolent.,Ømhed diffust." placeholder="Blødt..."></div>
+        <div class="input-item"><label>Ekstremiteter:</label><input autocomplete="off" type="text" id="o_ekst" data-list="Gode egale pulse a fem. og radialis, Ingen ødem,Ødem bilat" placeholder="God puls..."></div>
+        <div class="input-item"><label>&#9889;EKG:</label><input autocomplete="off" type="text" id="o_ekg" data-list="SR,AFli,SVT,VT" placeholder="SR"></div>
+        <div class="input-item"><label>&#9889;Frekvens:</label><input autocomplete="off" type="text" id="o_frek" placeholder="Bpm"></div>
+        <div class="input-item"><label>&#9889;Ledningsint:</label><input autocomplete="off" type="text" id="o_led" data-list="Normale ledningsintervaller,LBBB, RBBB, PQ forlænget,QTC forlænget,Avanceret AV blok" placeholder="Normale..."></div>
+        <div class="input-item"><label>&#9889;ST segm:</label><input autocomplete="off" type="text" id="o_st" data-list="Ingen ST deviationer eller påfaldende T-taks inv.,Iskæmi,T-takker inverterede,STEMI" placeholder="Ingen ST..."></div>
+        <div class="input-item"><label>Lab:</label><input autocomplete="off" type="text" id="o_lab" data-list="Normale lab. tal,TNT i diagnostisk interval normale,Akut-fase reaktanter forhøjede" placeholder="Normale..."></div>
+      </div>
+      <div class="preview" id="pre_obj"></div>
+      <button class="copy-btn" onclick="copy('pre_obj', 'st_obj')">Kopiér Objektivt</button><span id="st_obj" class="status"></span>
+    </div>
+  </div>
+
+  <button class="collapsible">3. Ekkokardiografi</button>
+  <div class="content">
+    <div class="card" style="border-top: 4px solid #8e44ad;">
+      <div class="input-grid">
+        <div class="input-item"><label>Aortarod:</label><input autocomplete="off" type="text" id="e_ao_mm" placeholder="mm"></div>
+        <div class="input-item"><label>LVD:</label><input autocomplete="off" type="text" id="e_lvd" placeholder="mm"></div>
+        <div class="input-item"><label>LVS:</label><input autocomplete="off" type="text" id="e_lvs" placeholder="mm"></div>
+        <div class="input-item"><label>IVD:</label><input autocomplete="off" type="text" id="e_ivd" placeholder="mm"></div>
+        <div class="input-item"><label>TAPSE:</label><input autocomplete="off" type="text" id="e_tap" placeholder="mm"></div>
+        <div class="input-item"><label>LVOT dimen:</label><input autocomplete="off" type="text" id="e_lvot" placeholder="cm"></div>
+        <div class="input-item"><label>VTI LVOT:</label><input autocomplete="off" type="text" id="e_vti_l" placeholder="cm"></div>
+        <div class="input-item"><label>VTI Ao:</label><input autocomplete="off" type="text" id="e_vti_a" placeholder="cm"></div>
+        <div class="input-item"><label>TR:</label><input autocomplete="off" type="text" id="e_tr" placeholder="mmHg"></div>
+      </div>
+      <div class="input-grid" style="margin-top: 20px;">
+        <div class="input-item"><label>Aortarod:</label><input autocomplete="off" type="text" id="e_aob" data-list="Normal stor,Let dilat,Moderat dilat,Svært dilatateret" placeholder="Normal str."></div>
+        <div class="input-item"><label>Klap:</label><input autocomplete="off" type="text" id="e_klap" data-list="Tricuspid,Bicuspid" placeholder="Tricuspid"></div>
+        <div class="input-item"><label>Åbning:</label><input autocomplete="off" type="text" id="e_aab" data-list="Normal åbning,Let nedsat åbning,Moderat nedsat åbning,Svært nedsat åbning" placeholder="Normal åbning"></div>
+        <div class="input-item"><label>Klap data:</label><input autocomplete="off" type="text" id="e_pg" placeholder="PG / MeanGrad / A-valve..."></div>
+        <div class="input-item"><label>AI:</label><input autocomplete="off" type="text" id="e_ai" data-list="Ingen,Let insuff.,Moderat insuff,Svær insuff" placeholder="Ingen"></div>
+        <div class="input-item"><label>Mitral:</label><input autocomplete="off" type="text" id="e_mk" data-list="Normal åbning,Nedsat åbning" placeholder="Normal åbning"></div>
+        <div class="input-item"><label>MI:</label><input autocomplete="off" type="text" id="e_mi" data-list="Ingen,Let insuff.,Moderat insuff.,Svær insuff" placeholder="Ingen"></div>
+        <div class="input-item"><label>LA:</label><input autocomplete="off" type="text" id="e_la" data-list="Normal str.,Let forstørret,Moderat stort,Svært forstørret" placeholder="Normal str."></div>
+        <div class="input-item"><label>LV:</label><input autocomplete="off" type="text" id="e_lv" data-list="Normal stor,Let dilateret,Moderat dilateret,Svært dilateret" placeholder="Normal stor"></div>
+        <div class="input-item"><label>EF:</label><input autocomplete="off" type="text" id="e_ef" data-list="Normal,Let nedsat,Moderat nedsat,Svært nedsat" placeholder="Normal"></div>
+        <div class="input-item"><label>Hypertrofi:</label><input autocomplete="off" type="text" id="e_hyp" data-list="Ingen hypertrofi,Let hypertrofi,Moderat hypertrofi,Svær hypertrofi" placeholder="Ingen"></div>
+        <div class="input-item"><label>RV:</label><input autocomplete="off" type="text" id="e_rv" data-list="Normal stor,Moderat dilateret,Svært dilateret" placeholder="Normal stor"></div>
+        <div class="input-item"><label>RV-Fun:</label><input autocomplete="off" type="text" id="e_rvf" data-list="Normal,Let nedsat,Moderat nedsat,Svært nedsat" placeholder="Normal"></div>
+        <div class="input-item"><label>Pulm-tryk:</label><input autocomplete="off" type="text" id="e_pt" data-list="Normalt,Let forhøjet.,Moderat forhøjet.,Svært forhøjet." placeholder="Normalt."></div>
+        <div class="input-item"><label>PE:</label><input autocomplete="off" type="text" id="e_pe" data-list="Ingen PE,Let PE,Moderat PE,Stort PE" placeholder="Ingen PE"></div>
+        <div class="input-item"><label>Konkl:</label><input autocomplete="off" type="text" id="e_kon" data-list="Ingen betydende valvulopati normal EF,Atrieflimren seq. dilateret venstre atrium,AMI seq. regional akinesi" placeholder="Ingen betydende..."></div>
+      </div>
+      <div class="preview" id="pre_echo"></div>
+      <button class="copy-btn" onclick="copy('pre_echo', 'st_echo')">Kopiér Ekko</button><span id="st_echo" class="status"></span>
+    </div>
+  </div>
+</div>
+<p style="text-align: center;">.-. .- ... -- ..- ... &#129339 .- .-.. -... .. -. .. ..- ... ... .-.</p>
+
+<script>
+function updateTitle(el) {
+  document.title = el.value ? el.value + " - Klinisk Journal" : "Klinisk Skabelon";
+}
+
+var coll = document.getElementsByClassName("collapsible");
+for (let i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    content.style.display = (content.style.display === "block") ? "none" : "block";
+  });
+}
+
+function update() {
+  const g = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return "";
+    if (el.value) return el.value; 
+    if (el.dataset.list) return el.dataset.list.split(',')[0].trim(); 
+    return ""; 
+  };
+  const show = (val, prefix, suffix = "") => val ? `${prefix}${val}${suffix}` : "";
+
+  // 1. ANAMNESE
+  const alder = g('a_alder');
+  const nitro = document.getElementById('a_nitro').value;
+  const risiko = document.getElementById('a_risiko').value || "Ingen";
+  let anaStory = ` ${alder ? alder + ' årig' : '<span class="missing">[Alder?]</span>'} ${g('a_kon')}. Indlægges pga. ${g('a_pga')} mhp. obs. ${g('a_obs')}.${show(g('a_debut'), ' Debut: ', '.')} Varighed: ${g('a_varighed')}. Smertekarakter: ${g('a_karakter')} ${g('a_ud')}.${show(g('a_vas'), ' Intensitet VAS: ', '.')}${show(nitro, ' Der er forsøgt nitroglycerin med ', '.')}`;
+  anaStory += ` RF: ${risiko}.${show(g('a_tidl'), ' Tidl. kard.: ', '.')}`;
+  document.getElementById('pre_ana').innerHTML = anaStory;
+
+  // 2. OBJEKTIVT
+  document.getElementById('pre_obj').innerHTML = `Objektivt: ${g('o_at')} Stet. P: ${g('o_stetp')} Stet. C: ${g('o_stetc')} Abdomen: ${g('o_abd')} Ekstremiteter: ${g('o_ekst')}<br>\nEKG: ${g('o_ekg')}${show(g('o_frek'), ' med frekvens ', ' bpm')}. Der ses ${g('o_led')} og ${g('o_st')}.<br>\nLaboratorie værdier: ${g('o_lab')}.`;
+
+  // 3. ECHO & AVA BEREGNING
+  const lvotD = parseFloat(document.getElementById('e_lvot').value.replace(',', '.'));
+  const vtiL = parseFloat(document.getElementById('e_vti_l').value.replace(',', '.'));
+  const vtiA = parseFloat(document.getElementById('e_vti_a').value.replace(',', '.'));
+  let avaCalcText = "";
+
+  if (!isNaN(lvotD) && !isNaN(vtiL) && !isNaN(vtiA) && vtiA > 0) {
+    const area = (lvotD * lvotD * 0.7854 * vtiL) / vtiA;
+    avaCalcText = ` (Beregnet AVA: ${area.toFixed(2)} cm²)`;
+  }
+
+  const ms = [
+    show(g('e_ao_mm'), 'Aortarod ', ' mm'), 
+    show(g('e_lvd'), 'LVD ', ' mm'), 
+    show(g('e_lvs'), 'LVS ', ' mm'), 
+    show(g('e_ivd'), 'IVD ', ' mm'),
+    show(g('e_tap'), 'TAPSE ', ' mm'), 
+    show(g('e_lvot'), 'LVOT d: ', ' cm'), 
+    show(g('e_vti_l'), 'VTI LVOT: ', ' cm'), 
+    show(g('e_vti_a'), 'VTI Ao: ', ' cm' + avaCalcText), 
+    show(g('e_tr'), 'TR: ', ' mmHg')
+  ].filter(x => x !== "").join(', ');
+
+  document.getElementById('pre_echo').innerHTML = `Ekkokardiografi:\n${ms ? 'Målinger: ' + ms + '.\n' : ''}Beskrivelse: Aortaroden er ${g('e_aob')}. Aortaklappen ${g('e_klap')} med ${g('e_aab')}${show(g('e_pg'), ' og ', ' mmHg')}. Aortainsufficiens: ${g('e_ai')}. Mitralklap findes med ${g('e_mk')} og ${g('e_mi')} mitralinsufficiens. Venstre atrium: ${g('e_la')}, Venstre ventrikel: ${g('e_lv')} med ${g('e_ef')} LVEF og ${g('e_hyp')}. Højre ventrikel: ${g('e_rv')} med ${g('e_rvf')} funktion. Pulmonaltryk: ${g('e_pt')}. Perikardieansamling (PE): ${g('e_pe')}.\nKonklusion TTE: ${g('e_kon')}.`;
+}
+
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('input', function() {
+    update();
+  });
+});
+
+function copy(id, sid) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.innerText).then(() => {
+    document.getElementById(sid).innerText = "✓ Kopieret!";
+    setTimeout(() => document.getElementById(sid).innerText = "", 1500);
+  });
+}
+
+function copyAll() {
+  const name = document.getElementById('patient_name').value || "Ukendt Patient";
+  const combined = `JOURNAL FOR: ${name.toUpperCase()}\n\nANAMNESE\n${document.getElementById('pre_ana').innerText}\n\nOBJEKTIVT\n${document.getElementById('pre_obj').innerText}\n\n${document.getElementById('pre_echo').innerText}`;
+  navigator.clipboard.writeText(combined).then(() => alert("Samlet journal kopieret."));
+}
+
+
+
+  // COMBINED AUTOCOMPLETE ENGINE - dropdown on focus + inline type-ahead
+  let activeDropdown = null;
+
+  function closeDropdown() {
+    if (activeDropdown) { activeDropdown.remove(); activeDropdown = null; }
+  }
+
+  function buildDropdown(input, options, filter) {
+    closeDropdown();
+    const filtered = filter
+      ? options.filter(o => o.toLowerCase().includes(filter.toLowerCase()))
+      : options;
+    if (filtered.length === 0) return;
+
+    const dd = document.createElement('div');
+    dd.className = 'dropdown';
+
+    filtered.forEach(opt => {
+      const item = document.createElement('div');
+      item.textContent = opt;
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        input.value = opt;
+        closeDropdown();
+        input.focus();
+        update();
+      });
+      dd.appendChild(item);
+    });
+
+    input.parentElement.style.position = 'relative';
+    input.parentElement.appendChild(dd);
+    activeDropdown = dd;
+  }
+
+  document.querySelectorAll('input[data-list]').forEach(input => {
+    const options = input.dataset.list.split(',').map(o => o.trim()).filter(o => o);
+
+    // Show all options on focus
+    input.addEventListener('focus', () => buildDropdown(input, options, ''));
+
+    // Inline autocomplete + filtered dropdown on type
+    input.addEventListener('input', () => {
+      const query = input.value;
+      if (query.length > 0) {
+        const match = options.find(o => o.toLowerCase().startsWith(query.toLowerCase()));
+        if (match && query.length < match.length) {
+          input.value = match;
+          input.setSelectionRange(query.length, match.length);
+        }
+        buildDropdown(input, options, query);
+      } else {
+        buildDropdown(input, options, '');
+      }
+    });
+  });
+
+  document.addEventListener('mousedown', (e) => {
+    if (activeDropdown && !activeDropdown.contains(e.target)) closeDropdown();
+  });
+
+
+
+window.onload = update;
+</script>
+</body>
+</html>
