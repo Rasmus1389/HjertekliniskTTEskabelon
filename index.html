@@ -196,18 +196,37 @@ document.querySelectorAll('input').forEach(input => {
   });
 });
 
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+}
+
 function copy(id, sid) {
   const el = document.getElementById(id);
-  navigator.clipboard.writeText(el.innerText).then(() => {
+  const text = el.innerText;
+  const done = () => {
     document.getElementById(sid).innerText = "✓ Kopieret!";
     setTimeout(() => document.getElementById(sid).innerText = "", 1500);
-  });
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(() => { fallbackCopy(text); done(); });
+  } else {
+    fallbackCopy(text); done();
+  }
 }
 
 function copyAll() {
   const name = document.getElementById('patient_name').value || "Ukendt Patient";
   const combined = `JOURNAL FOR: ${name.toUpperCase()}\n\nANAMNESE\n${document.getElementById('pre_ana').innerText}\n\nOBJEKTIVT\n${document.getElementById('pre_obj').innerText}\n\n${document.getElementById('pre_echo').innerText}`;
-  navigator.clipboard.writeText(combined).then(() => alert("Samlet journal kopieret."));
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(combined).then(() => alert("Samlet journal kopieret.")).catch(() => { fallbackCopy(combined); alert("Samlet journal kopieret."); });
+  } else {
+    fallbackCopy(combined); alert("Samlet journal kopieret.");
+  }
 }
 
 
